@@ -1,0 +1,17 @@
+# Mac files
+.DS_Store
+
+# Output files from testing
+*.txt
+*.csv
+
+# Class files
+*.class
+
+# Deploy files
+*.zip
+*.cmd
+*.jar
+*.jnlp
+*.jks
+*.html
