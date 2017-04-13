@@ -9,6 +9,11 @@
 *.class
 
 # Deploy files
+build/*
+.gradle*
+gradle/*
+*.bat
+gradlew
 *.zip
 *.cmd
 *.jar
