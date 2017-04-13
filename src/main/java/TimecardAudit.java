@@ -39,7 +39,7 @@ public class TimecardAudit extends JFrame {
 
   public TimecardAudit(){
     super("ADP Timecard Report Audit v0.1");
-    setSize(300, 150);
+    setSize(300, 175);
     setDefaultCloseOperation(EXIT_ON_CLOSE);
     Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
     this.setLocation(dim.width/2-this.getSize().width/2, dim.height/2-this.getSize().height/2);
@@ -54,7 +54,8 @@ public class TimecardAudit extends JFrame {
     JButton runButton = new JButton("Run");
     JButton fileButton = new JButton("Select File");
     JComboBox minuteRoundList = new JComboBox(minuteRoundListOptions);
-    final JLabel statusbar = new JLabel("No file selected - バカ");
+    final JLabel statusbar = new JLabel("No file selected");
+    final JLabel minuteListLabel = new JLabel("Round calculations to the nearest");
 
     // Create a file chooser that allows you to pick a CSV file
     fileButton.addActionListener(new ActionListener() {
@@ -113,14 +114,17 @@ public class TimecardAudit extends JFrame {
     minuteRoundList.setSelectedIndex(0);
 
     JPanel topPanel = new JPanel();
+    JPanel centerPanel = new JPanel();
     JPanel bottomPanel = new JPanel();
 
     topPanel.add(fileButton);
     topPanel.add(runButton);
-    bottomPanel.add(minuteRoundList);
+    centerPanel.add(minuteListLabel);
+    centerPanel.add(minuteRoundList);
     bottomPanel.add(statusbar);
 
     c.add(topPanel, BorderLayout.NORTH);
+    c.add(centerPanel, BorderLayout.CENTER);
     c.add(bottomPanel, BorderLayout.SOUTH);
   }
 
