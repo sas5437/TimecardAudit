@@ -28,3 +28,12 @@ dependencies {
     // 'test.useTestNG()' to your build script.
     testCompile 'junit:junit:4.12'
 }
+
+jar {
+    manifest {
+        attributes 'Implementation-Title': 'ADP Timecard Audit',
+                   'Implementation-Version': '0.2.0',
+									 'Permissions': 'all-permissions',
+									 'Main-Class': 'TimecardAudit'
+    }
+}
