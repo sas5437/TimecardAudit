@@ -34,6 +34,6 @@ jar {
         attributes 'Implementation-Title': 'ADP Timecard Audit',
                    'Implementation-Version': '0.2.0',
 									 'Permissions': 'all-permissions',
-									 'Main-Class': 'TimecardAudit'
+									 'Main-Class': 'timecard.TimeCardAudit'
     }
 }
