@@ -47,16 +47,17 @@ public class TimePair {
 
   public Double getHoursAfterMidnight() {
     if(clockIn.getHour() < 6){
-      double hoursWorked = Duration.between(clockIn, clockOut).toMinutes() / 60.0;
-      // return new DecimalFormat("##.##").format(hoursWorked);
-      return hoursWorked;
+      if(clockOut.getHour() >= 6) {
+        return Duration.between(clockIn, LocalDateTime.of(clockOut.getYear(), clockOut.getMonth(), clockOut.getDayOfMonth(), 6, 0)).toMinutes() / 60.0;
+      } else {
+        return Duration.between(clockIn, clockOut).toMinutes() / 60.0;
+      }
     } else if (clockIn.getHour() >= 6 && clockOut.getHour() < 6) {
-      double hoursWorked = Duration.between(LocalDateTime.of(clockOut.getYear(), clockOut.getMonth(), clockOut.getDayOfMonth(), 0, 0), clockOut).toMinutes() / 60.0;
-      // return new DecimalFormat("##.##").format(hoursWorked);
-      return hoursWorked;
+      return Duration.between(LocalDateTime.of(clockOut.getYear(), clockOut.getMonth(), clockOut.getDayOfMonth(), 0, 0), clockOut).toMinutes() / 60.0;
     } else {
       return 0.0;
     }
+    // return new DecimalFormat("##.##").format(hoursWorked);
   }
 
 }
