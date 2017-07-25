@@ -53,4 +53,17 @@ public class TimeCardTest {
     timeCard.addTimePair(new TimePair(in, out, "dept", "paycode", 5.0, 1));
     assertEquals(timeCard.getTotalHoursAfterMidnight(), 5.583, 0.001);
   }
+
+  @Test
+  public void testGetTotalHoursWorked() {
+    TimeCard timeCard = new TimeCard("A01", "scott", "serok", "f4f383");
+    LocalDateTime in = LocalDateTime.of(2017, 1, 1, 1, 0);
+    LocalDateTime out = LocalDateTime.of(2017, 1, 2, 1, 1);
+    timeCard.addTimePair(new TimePair(in, out, "dept", "paycode", 9.5, 1));
+    in = LocalDateTime.of(2017, 1, 2, 2, 0);
+    out = LocalDateTime.of(2017, 1, 2, 2, 1);
+    timeCard.addTimePair(new TimePair(in, out, "dept", "paycode", 5.0, 1));
+    // total hours is calculated from TimePair#duration 
+    assertEquals(timeCard.getTotalHoursWorked(), 14.5, 0);
+  }
 }
