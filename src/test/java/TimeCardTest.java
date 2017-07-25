@@ -66,4 +66,28 @@ public class TimeCardTest {
     // total hours is calculated from TimePair#duration 
     assertEquals(timeCard.getTotalHoursWorked(), 14.5, 0);
   }
+
+  @Test
+  public void testGetDaysWithSpread() {
+    TimeCard timeCard = new TimeCard("A01", "scott", "serok", "f4f383");
+      // with spread
+    LocalDateTime in = LocalDateTime.of(2017, 1, 1, 10, 05);
+    LocalDateTime out = LocalDateTime.of(2017, 1, 2, 1, 35);
+    timeCard.addTimePair(new TimePair(in, out, "dept", "paycode", 0.0, 1));
+      // without spread
+    in = LocalDateTime.of(2017, 1, 2, 9, 0);
+    out = LocalDateTime.of(2017, 1, 2, 12, 0);
+    timeCard.addTimePair(new TimePair(in, out, "dept", "paycode", 0.0, 1));
+      // with spread across 2 TimePairs
+    in = LocalDateTime.of(2017, 1, 3, 9, 30);
+    out = LocalDateTime.of(2017, 1, 3, 12, 10);
+    timeCard.addTimePair(new TimePair(in, out, "dept", "paycode", 0.0, 1));
+    in = LocalDateTime.of(2017, 1, 3, 14, 10);
+    out = LocalDateTime.of(2017, 1, 3, 23, 42);
+    timeCard.addTimePair(new TimePair(in, out, "dept", "paycode", 0.0, 1));
+
+      // spread is any calendar day (6am to 5:59am) working more than 10 hrs
+      // from start of first clock in to the end of last clock out.
+    assertEquals(timeCard.getDaysWithSpread(), 2, 0);
+  }
 }

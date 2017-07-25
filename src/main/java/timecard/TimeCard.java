@@ -100,7 +100,7 @@ public class TimeCard {
     LocalDateTime latestOut;
     // Populate domHashMap
     for(TimePair timePair : timePairs) {
-      if(domHashMap.get(timePair.getDayOfMonth()) != null)
+      if(domHashMap.get(timePair.getDayOfMonth()) == null)
         domHashMap.put(timePair.getDayOfMonth(), new ArrayList<TimePair>());    
       domHashMap.get(timePair.getDayOfMonth()).add(timePair);
     }
