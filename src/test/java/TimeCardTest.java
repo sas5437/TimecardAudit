@@ -1,6 +1,8 @@
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
+import java.util.ArrayList;
 
+import timecard.*;
 
 public class TimeCardTest {
   @Test
@@ -28,5 +30,13 @@ public class TimeCardTest {
     assertEquals(timeCard.getFirstName(), "John");
     timeCard.setLastName("Cena");
     assertEquals(timeCard.getLastName(), "Cena");
+  }
+
+  @Test
+  public void testAddingTimePairs() {
+    TimeCard timeCard = new TimeCard("A01", "Scott", "Serok");
+    TimePair timePair = new TimePair();
+    timeCard.addTimePair(timePair);
+    assertEquals(timeCard.getTimePairs().size(), 1);
   }
 }

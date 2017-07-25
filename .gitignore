@@ -1,6 +1,9 @@
 # Mac files
 .DS_Store
 
+# Vim files
+*.swp
+
 # Output files from testing
 *.txt
 *.csv

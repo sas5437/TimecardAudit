@@ -2,6 +2,7 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import timecard.TimePair;
 
 
 public class TimePairTest {
