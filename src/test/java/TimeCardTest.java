@@ -15,7 +15,7 @@ public class TimeCardTest {
 
   @Test
   public void testPopulatedConstructor() {
-    TimeCard timeCard = new TimeCard("A01", "Scott", "Serok");
+    TimeCard timeCard = new TimeCard("A01", "Scott", "Serok", "position2342");
     assertEquals(timeCard.getCompanyCode(), "A01");
     assertEquals(timeCard.getFirstName(), "Scott");
     assertEquals(timeCard.getLastName(), "Serok");
@@ -34,7 +34,7 @@ public class TimeCardTest {
 
   @Test
   public void testAddingTimePairs() {
-    TimeCard timeCard = new TimeCard("A01", "Scott", "Serok");
+    TimeCard timeCard = new TimeCard("A01", "Scott", "Serok", "posit iong345F#$T");
     TimePair timePair = new TimePair();
     timeCard.addTimePair(timePair);
     assertEquals(timeCard.getTimePairs().size(), 1);

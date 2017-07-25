@@ -22,8 +22,8 @@ public class Controller {
     }
   }
 
-  public void setRoundingOption(boolean isRoundingToFifteen) {
-    csvHandler.setRoundingOption(isRoundingToFifteen);
+  public void setRoundingOption(Integer roundToNearest) {
+    csvHandler.setRoundingOption(roundToNearest);
   }
 
   public boolean isReadyToProcess() {

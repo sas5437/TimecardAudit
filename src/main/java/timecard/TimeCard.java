@@ -1,10 +1,18 @@
 package timecard;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Collections;
+import java.util.Comparator;
+import java.time.Duration;
+import java.time.LocalDateTime;
 
-// Company Code,Last Name,First Name,Worked Department,State,In time,Out time,Out Punch Type,Hours,Pay Code
+import timecard.TimePair;
+import timecard.TimePairComparator;
+
+// Company Code,Last Name,First Name,Position Id,Worked Department,State,In time,Out time,Out Punch Type,Hours,Pay Code
 public class TimeCard {
-
+  private static int TEN_HOURS_IN_SECONDS = 36000;
   String positionId;
   String companyCode;
   String lastName;
@@ -59,6 +67,10 @@ public class TimeCard {
     return lastName;
   }
 
+  public String getFullName() {
+    return lastName + ", " + firstName;
+  }
+
   public void addTimePair(TimePair timePair) {
     this.timePairs.add(timePair);
   }
@@ -67,58 +79,44 @@ public class TimeCard {
     return timePairs;
   }
 
+  public Double getTotalHoursWorked() {
+    Double total = 0.0;
+    for(TimePair timePair : timePairs) {
+      total += timePair.getDuration();
+    }
+    return total;
+  }
+
   // Used for spread of hours calculation
   // SOH uses adjusted clock in and clock out times
   // and must look at the earliest clock in (after 6am)
   // and the latest clock out (before 6 am next day) to
   // determine the full spread of hours
-  public Double getTotalSpreadOfHours() {
-
-    try {
-      adjustedIn = dateToAdjustedDate(in);
-    } catch (Exception e) {
-      throw new Exception("Clock In could not be adjusted on line " + rowNumber + " of the CSV.");
+  public Integer getDaysWithSpread() {
+    Integer daysWithSpread = 0;
+    HashMap<Integer, ArrayList<TimePair>> domHashMap = new HashMap<Integer, ArrayList<TimePair>>();
+    ArrayList<TimePair> tmpTimePairs;
+    LocalDateTime earliestIn;
+    LocalDateTime latestOut;
+    // Populate domHashMap
+    for(TimePair timePair : timePairs) {
+      if(domHashMap.get(timePair.getDayOfMonth()) != null)
+        domHashMap.put(timePair.getDayOfMonth(), new ArrayList<TimePair>());    
+      domHashMap.get(timePair.getDayOfMonth()).add(timePair);
     }
-    try {
-      adjustedOut = dateToAdjustedDate(out);
-    } catch (Exception e) {
-      throw new Exception("Clock out could not be adjusted on line " + rowNumber + " of the CSV.");
+    // Process each day of the month by iterating over the keys
+    for(Integer key : domHashMap.keySet()) {
+      tmpTimePairs = domHashMap.get(key);
+      // First, sort the TimePairs by clockIn
+      Collections.sort(tmpTimePairs, new TimePairComparator());
+      // Second, grab clock in of first, grab clock out of last
+      earliestIn = tmpTimePairs.get(0).getClockInAdjusted();
+      latestOut = tmpTimePairs.get(tmpTimePairs.size()-1).getClockOutAdjusted();
+      if(Duration.between(earliestIn, latestOut).getSeconds() > TEN_HOURS_IN_SECONDS){
+        daysWithSpread += 1;
+      }
     }
-
-    // TODO: move the rest of this method into TimeCard as a calculation method or on addTimePair trigger update
-    // Setup spread of hours calculation by gathering earliest and latest clock in/out for a day (splitting days at 6am)
-    if(adjustedIn.getHour() < 6) {
-      dateKey = Integer.toString(adjustedIn.minusDays(1).getMonthValue()) + adjustedIn.minusDays(1).getDayOfMonth();
-    } else {
-      dateKey = Integer.toString(adjustedIn.getMonthValue()) + adjustedIn.getDayOfMonth();
-    }
-
-    if (employeeSpreadOfHours.get(key) == null)
-      employeeSpreadOfHours.put(key, new HashMap<String, HashMap<String, LocalDateTime>>());
-
-    if (employeeSpreadOfHours.get(key).get(dateKey) == null)
-      employeeSpreadOfHours.get(key).put(dateKey, new HashMap<String, LocalDateTime>());
-
-    if (employeeSpreadOfHours.get(key).get(dateKey).get("IN") == null)
-      employeeSpreadOfHours.get(key).get(dateKey).put("IN", in);
-
-    if (employeeSpreadOfHours.get(key).get(dateKey).get("OUT") == null)
-      employeeSpreadOfHours.get(key).get(dateKey).put("OUT", in);
-
-    if(in.getHour() > 6 && in.getHour() < employeeSpreadOfHours.get(key).get(dateKey).get("IN").getHour())
-      employeeSpreadOfHours.get(key).get(dateKey).put("IN", in);
-
-    if((out.getHour() > 6 && out.getHour() > employeeSpreadOfHours.get(key).get(dateKey).get("OUT").getHour()) ||
-       (out.getHour() < 6 && employeeSpreadOfHours.get(key).get(dateKey).get("OUT").getHour() < 6 && out.getHour() > employeeSpreadOfHours.get(key).get(dateKey).get("OUT").getHour()) ||
-       (out.getHour() < 6 && employeeSpreadOfHours.get(key).get(dateKey).get("OUT").getHour() > 6)) {
-      employeeSpreadOfHours.get(key).get(dateKey).put("OUT", out);
-    }
-    return 0.0;
-  }
-
-  public Integer getNumberOfDaysWithSpreadOfHours() {
-    // > 10 hours in 1 day adds to count
-    return 0;
+    return daysWithSpread;
   }
 
   // "Shift Differential" hourly rate adjustment

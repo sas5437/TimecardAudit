@@ -46,15 +46,12 @@ public class View extends JFrame {
       public void actionPerformed(ActionEvent ae) {
         String selectedItem = (String)minuteRoundList.getSelectedItem();
         if(selectedItem.equals(ONE_MINUTE)) {
-          isRoundedToFifteen = false;
+          controller.setRoundingOption(1);
 
         } else if (selectedItem.equals(FIFTEEN_MINUTES)) {
-          isRoundedToFifteen = true;
+          controller.setRoundingOption(15);
 
-        } else {
-          isRoundedToFifteen = false;
         }
-        controller.setRoundingOption(isRoundedToFifteen);
       }
     });
 
