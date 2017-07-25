@@ -121,7 +121,9 @@ public class TimeCard {
 
   // "Shift Differential" hourly rate adjustment
   public Double getTotalHoursAfterMidnight() {
-
-    return 0.0;
+    Double hoursAfterMidnight = 0.0;
+    for(TimePair timePair : timePairs)
+      hoursAfterMidnight += timePair.getHoursAfterMidnight();
+    return hoursAfterMidnight;
   }
 }

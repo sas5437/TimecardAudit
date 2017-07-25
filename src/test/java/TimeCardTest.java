@@ -1,6 +1,7 @@
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 import java.util.ArrayList;
+import java.time.LocalDateTime;
 import timecard.TimeCard;
 import timecard.TimePair;
 
@@ -39,5 +40,17 @@ public class TimeCardTest {
     timeCard.addTimePair(timePair);
     assertEquals(timeCard.getTimePairs().size(), 1);
     assertEquals(timeCard.getTimePairs().get(0), timePair);
+  }
+
+  @Test
+  public void testGetTotalHoursAfterMidnight() {
+    TimeCard timeCard = new TimeCard("A01", "scott", "serok", "f4f383");
+    LocalDateTime in = LocalDateTime.of(2017, 1, 1, 14, 05);
+    LocalDateTime out = LocalDateTime.of(2017, 1, 2, 1, 35);
+    timeCard.addTimePair(new TimePair(in, out, "dept", "paycode", 9.5, 1));
+    in = LocalDateTime.of(2017, 1, 2, 2, 0);
+    out = LocalDateTime.of(2017, 1, 2, 7, 0);
+    timeCard.addTimePair(new TimePair(in, out, "dept", "paycode", 5.0, 1));
+    assertEquals(timeCard.getTotalHoursAfterMidnight(), 5.583, 0.001);
   }
 }
