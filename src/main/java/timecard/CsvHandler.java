@@ -41,9 +41,10 @@ public class CsvHandler {
 
   public void setFile(File file) throws FileNameExtensionError {
     if(file.getName().matches("(?i).*\\.csv$")){
+      this.file = file;
+    } else {
       throw new FileNameExtensionError(".csv");
     }
-    this.file = file;
   }
 
   public void setRoundingOption(Integer roundMinutesTo) {

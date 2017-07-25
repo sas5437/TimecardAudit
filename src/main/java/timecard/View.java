@@ -15,22 +15,22 @@ public class View extends JFrame {
 
   Controller controller;
   File file;
-  static boolean isRoundedToFifteen;
   JFileChooser chooser;
   FileNameExtensionFilter filter;
   JButton runButton;
   JLabel statusbar;
 
-  public View(Controller controller) {
+  public View() {
     super();
+  }
 
+  public void setup(Controller controller) {
     this.controller = controller;
     file = null;
-    isRoundedToFifteen = false;
     String[] minuteRoundListOptions = { ONE_MINUTE, FIFTEEN_MINUTES };
     
     setTitle(WINDOW_TITLE);
-    setSize(300, 175);
+    setSize(500, 275);
     setDefaultCloseOperation(EXIT_ON_CLOSE);
     
     Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
@@ -38,9 +38,10 @@ public class View extends JFrame {
 
     runButton = new JButton("Run");
     JButton fileButton = new JButton("Select File");
-    JComboBox minuteRoundList = new JComboBox(minuteRoundListOptions);
-    statusbar = new JLabel("No file selected");
+    JComboBox minuteRoundList = new JComboBox(minuteRoundListOptions); 
     JLabel minuteListLabel = new JLabel("Round calculations to the nearest");
+    statusbar = new JLabel();
+    statusbar.setForeground(Color.BLUE);
 
     minuteRoundList.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent ae) {
@@ -64,14 +65,12 @@ public class View extends JFrame {
         chooser.setFileFilter(filter);
         int option = chooser.showOpenDialog(View.this);
         if (option == JFileChooser.APPROVE_OPTION) {
-          File file = chooser.getSelectedFile();
+          file = chooser.getSelectedFile();
           controller.setFile(file);
-          String filename = (file == null ? "nothing" : file.getName());
-          statusbar.setText(filename + " selected.");
 
         }
         else {
-          statusbar.setText("Canceled.");
+          setStatusText("");
 
         }
         toggleRunButton();
@@ -86,24 +85,14 @@ public class View extends JFrame {
 
         } else {
           try {
-            statusbar.setText("... processing " + file.getName());
+            setStatusText("... processing " + file.getName());
             controller.processFile();
-            statusbar.setText("Finished processing " + file.getName());
+            setStatusText("Finished processing " + file.getName());
             // java.awt.Desktop.getDesktop().edit(new File("AuditResults.csv"));
             // java.awt.Desktop.getDesktop().edit(new File("SummaryResults.csv"));
 
           } catch (Exception e) {
-            statusbar.setText("There was a problem processing the file.");
-            try {
-              FileWriter errorFile = new FileWriter("ErrorLog.txt");
-              errorFile.write(" \n\nMessage: " + e.getMessage() + "\n\nStack Trace: " + e.getStackTrace()[0].toString());
-              errorFile.close();
-              java.awt.Desktop.getDesktop().edit(new File("ErrorLog.txt"));
 
-            } catch (IOException ex) {
-              statusbar.setText("Problem processing the file and logging the exception.");
-
-            }
           }
         }
       }
@@ -126,10 +115,20 @@ public class View extends JFrame {
     c.add(topPanel, BorderLayout.NORTH);
     c.add(centerPanel, BorderLayout.CENTER);
     c.add(bottomPanel, BorderLayout.SOUTH);
+    toggleRunButton();
+    resetStatusBar();
+  }
+
+  public void resetStatusBar() {
+    setStatusText("No file selected.");
   }
 
   public void setStatusText(String message) {
     statusbar.setText(message);
+  }
+
+  public void sendPopupWindow(String message) {
+    JOptionPane.showMessageDialog(View.this, message);
   }
 
   private void toggleRunButton(){
