@@ -23,7 +23,7 @@ public class Controller {
       csvHandler.setFile(file);
       view.setStatusText(file.getName() + " selected.");
     } catch(FileNameExtensionError er) {
-      view.setStatusText(er.getMessage());
+      view.sendPopupWindow(er.getMessage());
     }
   }
 
@@ -45,6 +45,7 @@ public class Controller {
       try {
         csvHandler.processFile();
       } catch(Exception ex) {
+        csvHandler.setFile(null);
         view.setStatusText("There was a problem processing this file.");
         view.sendPopupWindow(ex.getMessage());
         ex.printStackTrace();

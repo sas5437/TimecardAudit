@@ -37,3 +37,8 @@ jar {
 									 'Main-Class': 'timecard.Auditor'
     }
 }
+
+task run(type: Exec, dependsOn: 'build') {
+  executable 'sh'
+  args '-c', 'java -jar ./build/libs/TimecardAudit.jar'
+}

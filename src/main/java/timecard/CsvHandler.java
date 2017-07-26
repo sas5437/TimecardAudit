@@ -40,7 +40,7 @@ public class CsvHandler {
   }
 
   public void setFile(File file) throws FileNameExtensionError {
-    if(file.getName().matches("(?i).*\\.csv$")){
+    if(file == null || file.getName().matches("(?i).*\\.csv$")){
       this.file = file;
     } else {
       throw new FileNameExtensionError(".csv");
@@ -52,7 +52,7 @@ public class CsvHandler {
   }
 
   public boolean isReady() {
-    if(file == null || file.getName().matches("(?i).*\\.csv$")) {
+    if(file == null || !file.getName().matches("(?i).*\\.csv$")) {
       return false;
     } else {
       return true;

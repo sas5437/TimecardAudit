@@ -69,10 +69,6 @@ public class View extends JFrame {
           controller.setFile(file);
 
         }
-        else {
-          setStatusText("");
-
-        }
         toggleRunButton();
       }
     });
@@ -92,7 +88,7 @@ public class View extends JFrame {
             // java.awt.Desktop.getDesktop().edit(new File("SummaryResults.csv"));
 
           } catch (Exception e) {
-
+            toggleRunButton();
           }
         }
       }
@@ -128,7 +124,11 @@ public class View extends JFrame {
   }
 
   public void sendPopupWindow(String message) {
-    JOptionPane.showMessageDialog(View.this, message);
+    JTextArea textArea = new JTextArea(6, 25);
+    textArea.setText(message);
+    textArea.setEditable(false);
+    JScrollPane scrollPane = new JScrollPane(textArea);
+    JOptionPane.showMessageDialog(View.this, scrollPane);
   }
 
   private void toggleRunButton(){
