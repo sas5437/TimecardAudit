@@ -19,7 +19,7 @@ The only headers used for auditing are Pay Date, Time In, Time Out, Hours, and E
 */
 
 public class Auditor {
-	public static void main(String[] args) {
+  public static void main(String[] args) {
     View view = new View();
     Controller controller = new Controller();
     controller.setView(view); 
