@@ -11,7 +11,11 @@ public class Controller {
 
   public Controller() {
     csvHandler = new CsvHandler();
-    view = new View(this);
+  }
+
+  public void setView(View aView) {
+    view = aView;
+    view.setup(this);
     view.setVisible(true);
   }
 
@@ -35,8 +39,8 @@ public class Controller {
     }
   }
 
-  public void setRoundingOption(boolean isRoundingToFifteen) {
-    csvHandler.setRoundingOption(isRoundingToFifteen);
+  public void setRoundingOption(Integer roundToNearest) {
+    csvHandler.setRoundingOption(roundToNearest);
   }
 
   public boolean isReadyToProcess() {
@@ -56,9 +60,11 @@ public class Controller {
         csvHandler.writeSummaryFile();
       } catch(FileNameExtensionError ex) {
         view.setStatusText(ex.getMessage());
+        view.sendPopupWindow(ex.getMessage());
         ex.printStackTrace();
       } catch(Exception ex) {
         view.setStatusText(ex.getMessage());
+        view.sendPopupWindow(ex.getMessage());
         ex.printStackTrace();
       }
     }

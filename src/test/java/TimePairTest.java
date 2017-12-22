@@ -13,6 +13,7 @@ public class TimePairTest {
   static String payCode;
   static Double duration;
   static TimePair timePair;
+  static int roundTo;
 
   @Before
   public void setupInstance() {
@@ -21,18 +22,19 @@ public class TimePairTest {
     department = "";
     payCode = "";
     duration = 0.0;
+    roundTo = 1;
   }
 
   @Test
   public void testNoHoursAfterMidnight() {
-    timePair = new TimePair(clockIn, clockOut, department, payCode, duration);
+    timePair = new TimePair(clockIn, clockOut, department, payCode, duration, roundTo);
     assertEquals(timePair.getHoursAfterMidnight(), 0.0, 0.0);
   }
 
   @Test
   public void testPartialHoursAfterMidnight() {
     clockOut = LocalDateTime.of(2017, 7, 22, 3, 30);
-    timePair = new TimePair(clockIn, clockOut, department, payCode, duration);
+    timePair = new TimePair(clockIn, clockOut, department, payCode, duration, roundTo);
     assertEquals(timePair.getHoursAfterMidnight(), 3.5, 0.0);
   }
 
@@ -40,7 +42,7 @@ public class TimePairTest {
   public void testAllHoursAfterMidnight() {
     clockIn = LocalDateTime.of(2017, 7, 22, 3, 30);
     clockOut = LocalDateTime.of(2017, 7, 22, 9, 30);
-    timePair = new TimePair(clockIn, clockOut, department, payCode, duration);
+    timePair = new TimePair(clockIn, clockOut, department, payCode, duration, roundTo);
     assertEquals(timePair.getHoursAfterMidnight(), 2.5, 0.0);
   }
 }

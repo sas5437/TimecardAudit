@@ -2,6 +2,7 @@ package timecard;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Collections;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -11,14 +12,14 @@ import java.text.DecimalFormat;
 public class TimeCard {
 
   private static final Integer REGULAR_WORK_WEEK = 40;
-  private static final double SPREAD_OF_HOURS_LIMIT = 10.0;
+  private static int TEN_HOURS_IN_SECONDS = 36000;
 
   String positionId;
   String companyCode;
   String lastName;
   String firstName;
   ArrayList<TimePair> timePairs;
-  boolean isRoundedFifteen;
+  Integer roundMinutesTo;
   HashMap<String, HashMap<String, LocalDateTime>> employeeSpreadOfHours;
   
   public TimeCard() {
@@ -26,16 +27,25 @@ public class TimeCard {
     companyCode = "";
     lastName = "";
     firstName = "";
-    this.isRoundedFifteen = true;
+    roundMinutesTo = 1;
     timePairs = new ArrayList<TimePair>();
   }
 
-  public TimeCard(String companyCode, String firstName, String lastName, String positionId, boolean isRoundedFifteen) {
+  public TimeCard(String companyCode, String firstName, String lastName, String positionId) {
     this.positionId = positionId;
     this.companyCode = companyCode;
     this.lastName = lastName;
     this.firstName = firstName;
-    this.isRoundedFifteen = isRoundedFifteen;
+    this.roundMinutesTo = 1;
+    timePairs = new ArrayList<TimePair>();
+  }
+
+  public TimeCard(String companyCode, String firstName, String lastName, String positionId, Integer roundMinutesTo) {
+    this.positionId = positionId;
+    this.companyCode = companyCode;
+    this.lastName = lastName;
+    this.firstName = firstName;
+    this.roundMinutesTo = roundMinutesTo;
     timePairs = new ArrayList<TimePair>();
   }
 
@@ -83,6 +93,14 @@ public class TimeCard {
     return timePairs;
   }
 
+  public Double getTotalHoursWorked() {
+    Double total = 0.0;
+    for(TimePair timePair : timePairs) {
+      total += timePair.getDuration();
+    }
+    return total;
+  }
+
   // Used for spread of hours calculation
   // SOH uses adjusted clock in and clock out times
   // and must look at the earliest clock in (after 6am)
@@ -96,29 +114,43 @@ public class TimeCard {
     return total;
   }
 
-  public Integer getNumberOfDaysWithSpreadOfHours() {
-    int count = 0;
-    for(TimePair timePair : timePairs)
-      if(timePair.getSpreadOfHours() > SPREAD_OF_HOURS_LIMIT)
-        count += 1;
-    return count;
+  public Integer getDaysWithSpread() {
+      Integer daysWithSpread = 0;
+      HashMap<Integer, ArrayList<TimePair>> domHashMap = new HashMap<Integer, ArrayList<TimePair>>();
+      ArrayList<TimePair> tmpTimePairs;
+      LocalDateTime earliestIn;
+      LocalDateTime latestOut;
+      // Populate domHashMap
+      for(TimePair timePair : timePairs) {
+        if(domHashMap.get(timePair.getDayOfMonth()) == null)
+          domHashMap.put(timePair.getDayOfMonth(), new ArrayList<TimePair>());
+        domHashMap.get(timePair.getDayOfMonth()).add(timePair);
+      }
+      // Process each day of the month by iterating over the keys
+      for(Integer key : domHashMap.keySet()) {
+        tmpTimePairs = domHashMap.get(key);
+        // First, sort the TimePairs by clockIn
+        Collections.sort(tmpTimePairs, new TimePairComparator());
+        // Second, grab clock in of first, grab clock out of last
+        earliestIn = tmpTimePairs.get(0).getClockInAdjusted();
+        latestOut = tmpTimePairs.get(tmpTimePairs.size()-1).getClockOutAdjusted();
+        if(Duration.between(earliestIn, latestOut).getSeconds() > TEN_HOURS_IN_SECONDS){
+          daysWithSpread += 1;
+        }
+      }
+      return daysWithSpread;
   }
 
   // "Shift Differential" hourly rate adjustment
   public Double getTotalHoursAfterMidnight() {
-
-    return 0.0;
-  }
-
-  public Double getFormattedTotalShiftDifferential() {
-    return 0.0;
-  }
-
-  public Double getTotalHoursWorked() {
-    Double totalHoursWorked = 0.0;
+    Double hoursAfterMidnight = 0.0;
     for(TimePair timePair : timePairs)
-      totalHoursWorked += timePair.getDuration();
-    return totalHoursWorked;
+      hoursAfterMidnight += timePair.getHoursAfterMidnight();
+    return hoursAfterMidnight;
+  }
+
+  public String getFormattedTotalShiftDifferential() {
+    return new DecimalFormat("##.##").format(getTotalHoursAfterMidnight()).toString();
   }
 
   public boolean hasOvertime() {
@@ -127,15 +159,5 @@ public class TimeCard {
 
   public String getFormattedTotalHoursWorked() {
     return new DecimalFormat("##.##").format(getTotalHoursWorked()).toString();
-  }
-
-  private LocalDateTime dateToAdjustedDate(LocalDateTime dateTime) {
-    if(isRoundedFifteen) {
-      int unroundedMinutes = dateTime.getMinute();
-      int mod = unroundedMinutes % 15;
-      return dateTime.plusMinutes(mod < 8 ? -mod : (15-mod));
-    } else {
-      return dateTime;
-    }
   }
 }

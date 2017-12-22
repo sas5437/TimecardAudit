@@ -18,7 +18,7 @@ public class CsvHandler {
   
   File inputFile;
   String outputFilePath;
-  boolean isRoundedToFifteen;
+  Integer roundMinutesTo;
   Integer companyCodeHeaderIndex;
   Integer positionIDHeaderIndex;
   Integer lastNameHeaderIndex;
@@ -37,7 +37,7 @@ public class CsvHandler {
 
   public CsvHandler() {
     inputFile = null;
-    isRoundedToFifteen = false;
+    roundMinutesTo = 0;
     timeCards = new HashMap<String, TimeCard>();
     outputFilePath = "AuditResults.csv";
     employeeNames = new HashMap<String, String>();
@@ -69,16 +69,15 @@ public class CsvHandler {
     return outputFilePath;
   }
 
-  public void setRoundingOption(boolean isRoundedToFifteen) {
-    this.isRoundedToFifteen = isRoundedToFifteen;
+  public void setRoundingOption(Integer roundMinutesTo) {
+    this.roundMinutesTo = roundMinutesTo;
   }
 
   public boolean isReady() {
-    if(inputFile == null || !inputFile.getName().matches("(?i).*\\.csv$")) {
-      return false;
-    } else {
+    if(inputFile != null && inputFile.getName().matches("(?i).*\\.csv$")) {
       return true;
     }
+    return false;
   }
 
   public void processFile() throws Exception {
@@ -108,7 +107,7 @@ public class CsvHandler {
         entry.getValue().getFormattedTotalHoursWorked() + "," +
         (entry.getValue().hasOvertime() ? "X" : "") + "," +
         entry.getValue().getFormattedTotalShiftDifferential() + "," +
-        entry.getValue().getNumberOfDaysWithSpreadOfHours() + "\n"
+        entry.getValue().getDaysWithSpread() + "\n"
       );
     }
     summaryFile.close();
@@ -154,7 +153,7 @@ public class CsvHandler {
             dataArray[firstNameHeaderIndex], 
             dataArray[lastNameHeaderIndex], 
             positionId,
-            isRoundedToFifteen)
+            roundMinutesTo)
           );
     }
     return timeCards.get(positionId);
@@ -203,7 +202,7 @@ public class CsvHandler {
     } catch(Exception e) {
       throw new Exception("Could not parse Position Id on line " + rowNumber + ".");
     }
-    return new TimePair(in, out, dept, payCode, hours);
+    return new TimePair(in, out, dept, payCode, hours, roundMinutesTo);
   }
 
   private LocalDateTime stringToDate(String string) {

@@ -31,9 +31,14 @@ dependencies {
 
 jar {
     manifest {
-        attributes 'Implementation-Title': 'ADP Timecard Audit',
+        attributes 'Implementation-Title': 'ADP Timecard Auditor',
                    'Implementation-Version': '0.2.0',
 									 'Permissions': 'all-permissions',
 									 'Main-Class': 'timecard.TimeCardAudit'
     }
+}
+
+task run(type: Exec, dependsOn: 'build') {
+  executable 'sh'
+  args '-c', 'java -jar ./build/libs/TimeCardAudit.jar'
 }

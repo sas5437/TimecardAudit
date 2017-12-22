@@ -20,6 +20,9 @@ The only headers used for auditing are Pay Date, Time In, Time Out, Hours, and E
 
 public class TimeCardAudit {
 	public static void main(String[] args) {
-    new Controller();
+    View view = new View();
+    Controller controller = new Controller();
+    controller.setView(view);
+    view.setVisible(true);
   }
 }

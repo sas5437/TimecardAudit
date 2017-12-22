@@ -15,22 +15,23 @@ public class View extends JFrame {
 
   Controller controller;
   File file;
-  static boolean isRoundedToFifteen;
+
   JFileChooser chooser;
   FileNameExtensionFilter filter;
   JButton runButton;
   JLabel statusbar;
 
-  public View(Controller controller) {
+  public View() {
     super();
+  }
 
+  public void setup(Controller controller) {
     this.controller = controller;
     file = null;
-    isRoundedToFifteen = false;
     String[] minuteRoundListOptions = { ONE_MINUTE, FIFTEEN_MINUTES };
     
     setTitle(WINDOW_TITLE);
-    setSize(350, 195);
+    setSize(500, 275);
     setDefaultCloseOperation(EXIT_ON_CLOSE);
     
     Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
@@ -38,23 +39,22 @@ public class View extends JFrame {
 
     runButton = new JButton("Run");
     JButton fileButton = new JButton("Select File");
-    JComboBox minuteRoundList = new JComboBox(minuteRoundListOptions);
-    statusbar = new JLabel("No file selected");
+
+    JComboBox minuteRoundList = new JComboBox(minuteRoundListOptions); 
     JLabel minuteListLabel = new JLabel("Round calculations to the nearest");
+    statusbar = new JLabel();
+    statusbar.setForeground(Color.BLUE);
 
     minuteRoundList.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent ae) {
         String selectedItem = (String)minuteRoundList.getSelectedItem();
         if(selectedItem.equals(ONE_MINUTE)) {
-          isRoundedToFifteen = false;
+          controller.setRoundingOption(1);
 
         } else if (selectedItem.equals(FIFTEEN_MINUTES)) {
-          isRoundedToFifteen = true;
+          controller.setRoundingOption(15);
 
-        } else {
-          isRoundedToFifteen = false;
         }
-        controller.setRoundingOption(isRoundedToFifteen);
       }
     });
 
@@ -71,11 +71,9 @@ public class View extends JFrame {
           controller.setInputFile(file);
           String filename = (file == null ? "nothing" : file.getName());
           statusbar.setText(filename + " selected.");
-
         }
         else {
           statusbar.setText("Canceled.");
-
         }
         toggleRunButton();
       }
@@ -92,9 +90,6 @@ public class View extends JFrame {
             String fileName = controller.getInputFilePath();
             statusbar.setText("... processing " + fileName);
             controller.processFile();
-            // statusbar.setText("Finished processing " + fileName);
-            // java.awt.Desktop.getDesktop().edit(new File("AuditResults.csv"));
-            // java.awt.Desktop.getDesktop().edit(new File("SummaryResults.csv"));
 
           } catch (Exception e) {
             statusbar.setText("There was a problem processing the file.");
@@ -108,6 +103,7 @@ public class View extends JFrame {
               statusbar.setText("Problem processing the file and logging the exception.");
 
             }
+            toggleRunButton();
           }
         }
       }
@@ -132,10 +128,24 @@ public class View extends JFrame {
     c.add(centerPanel, BorderLayout.CENTER);
     c.add(bottomPanel, BorderLayout.SOUTH);
     c.add(statusPanel, BorderLayout.SOUTH);
+    toggleRunButton();
+    resetStatusBar();
+  }
+
+  public void resetStatusBar() {
+    setStatusText("No file selected.");
   }
 
   public void setStatusText(String message) {
     statusbar.setText(message);
+  }
+
+  public void sendPopupWindow(String message) {
+    JTextArea textArea = new JTextArea(6, 25);
+    textArea.setText(message);
+    textArea.setEditable(false);
+    JScrollPane scrollPane = new JScrollPane(textArea);
+    JOptionPane.showMessageDialog(View.this, scrollPane);
   }
 
   private void toggleRunButton(){
