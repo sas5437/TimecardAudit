@@ -50,11 +50,11 @@ public class Controller {
         csvHandler.writeSummaryFile();
       } catch(FileNameExtensionError ex) {
         view.setStatusText(ex.getMessage());
-        view.sendPopupWindow(ex.getMessage());
+        view.showAlert(ex.getMessage());
         ex.printStackTrace();
       } catch(Exception ex) {
         view.setStatusText(ex.getMessage());
-        view.sendPopupWindow(ex.getMessage());
+        view.showAlert(ex.getMessage());
         ex.printStackTrace();
       }
     }

@@ -75,7 +75,7 @@ public class View {
       @Override
       public void handle(ActionEvent event) {
         if(!controller.isReadyToProcess()){
-          new Alert(AlertType.CONFIRMATION, "Please select an input file first.");
+          showAlert("Please select an input file first.");
         } else {
           try {
             String fileName = controller.getInputFilePath();
@@ -117,16 +117,14 @@ public class View {
     statusLabel.setText(message);
   }
 
-  public void sendPopupWindow(String message) {
+  public void showAlert(String message) {
     new Alert(AlertType.CONFIRMATION, message).show();
   }
 
   private void toggleRunButton(){
     if(controller.isReadyToProcess()){
-      new Alert(AlertType.CONFIRMATION, "READY!").show();
       runButton.setDisable(false);
     } else {
-      new Alert(AlertType.CONFIRMATION, "NOT READY").show();
       runButton.setDisable(true);
     }
   }
