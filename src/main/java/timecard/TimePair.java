@@ -8,9 +8,7 @@ import java.text.DecimalFormat;
 public class TimePair {
   
   LocalDateTime clockIn;
-  LocalDateTime clockInAdjusted;
   LocalDateTime clockOut;
-  LocalDateTime clockOutAdjusted;
   String department;
   String payCode;
   Double duration;
@@ -29,8 +27,6 @@ public class TimePair {
     this.roundTo = roundTo;   // should be increments of 5 ideally
     if(this.roundTo < 1)
       this.roundTo = 1;
-    this.clockInAdjusted = dateToAdjustedDate(clockIn);
-    this.clockOutAdjusted = dateToAdjustedDate(clockOut);
   }
 
   public LocalDateTime getClockIn() {
@@ -42,11 +38,11 @@ public class TimePair {
   }
   
   public LocalDateTime getClockInAdjusted() {
-    return clockInAdjusted;
+    return dateToAdjustedDate(clockIn);
   }
   
   public LocalDateTime getClockOutAdjusted() {
-    return clockOutAdjusted;
+    return dateToAdjustedDate(clockOut);
   } 
 
   public String getDepartment() {
@@ -72,13 +68,15 @@ public class TimePair {
   // Based off of Adjusted
   public Integer getDayOfMonth() {
     if(clockIn.getHour() < 6) {
-      return clockIn.minusDays(1).getDayOfMonth();
+      return getClockInAdjusted().minusDays(1).getDayOfMonth();
     } else {
-      return clockIn.getDayOfMonth();
+      return getClockInAdjusted().getDayOfMonth();
     }
   }
 
   public Double getHoursAfterMidnight() {
+    LocalDateTime clockIn = getClockInAdjusted();
+    LocalDateTime clockOut = getClockOutAdjusted();
     if(clockIn.getHour() < 6){
       if(clockOut.getHour() >= 6) {
         return Duration.between(clockIn, LocalDateTime.of(clockOut.getYear(), clockOut.getMonth(), clockOut.getDayOfMonth(), 6, 0)).toMinutes() / 60.0;
@@ -96,7 +94,7 @@ public class TimePair {
   public Double getSpreadOfHours() {
     if(clockIn == null || clockOut == null)
       return 0.0;
-    Double spreadOfHours = Duration.between(clockIn, clockOut).getSeconds() / 3600.0;
+    Double spreadOfHours = Duration.between(getClockInAdjusted(), getClockOutAdjusted()).getSeconds() / 3600.0;
     if(spreadOfHours < 10) { 
       return 0.0;
     }
@@ -112,10 +110,10 @@ public class TimePair {
   }
   
   private LocalDateTime dateToAdjustedDate(LocalDateTime dateTime) {
-    if(roundTo != null && roundTo > 0) {
+    if(roundTo > 1) {
       int unroundedMinutes = dateTime.getMinute();
-      int mod = unroundedMinutes % 15;
-      return dateTime.plusMinutes(mod < 8 ? -mod : (15-mod));
+      int mod = unroundedMinutes % roundTo;
+      return dateTime.plusMinutes(mod < (roundTo/2) ? -mod : (roundTo-mod));
     } else {
       return dateTime;
     }

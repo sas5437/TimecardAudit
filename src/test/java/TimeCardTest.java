@@ -34,24 +34,17 @@ public class TimeCardTest {
   }
 
   @Test
-  public void testAddingTimePairs() {
-    TimeCard timeCard = new TimeCard("A01", "Scott", "Serok", "posit iong345F#$T");
-    TimePair timePair = new TimePair();
-    timeCard.addTimePair(timePair);
-    assertEquals(timeCard.getTimePairs().size(), 1);
-    assertEquals(timeCard.getTimePairs().get(0), timePair);
-  }
-
-  @Test
   public void testGetTotalHoursAfterMidnight() {
     TimeCard timeCard = new TimeCard("A01", "scott", "serok", "f4f383");
     LocalDateTime in = LocalDateTime.of(2017, 1, 1, 14, 05);
-    LocalDateTime out = LocalDateTime.of(2017, 1, 2, 1, 35);
-    timeCard.addTimePair(new TimePair(in, out, "dept", "paycode", 9.5, 1));
+    LocalDateTime out = LocalDateTime.of(2017, 1, 2, 1, 17);
+    timeCard.addTimePair(in, out, "dept", "paycode", 9.5);
     in = LocalDateTime.of(2017, 1, 2, 2, 0);
     out = LocalDateTime.of(2017, 1, 2, 7, 0);
-    timeCard.addTimePair(new TimePair(in, out, "dept", "paycode", 5.0, 1));
-    assertEquals(timeCard.getTotalHoursAfterMidnight(), 5.583, 0.001);
+    timeCard.addTimePair(in, out, "dept", "paycode", 5.0);
+    assertEquals(timeCard.getTotalHoursAfterMidnight(), 5.28, 0.004);
+    timeCard.setRoundMinutes(15);
+    assertEquals(timeCard.getTotalHoursAfterMidnight(), 5.25, 0.0);
   }
 
   @Test
@@ -59,10 +52,10 @@ public class TimeCardTest {
     TimeCard timeCard = new TimeCard("A01", "scott", "serok", "f4f383");
     LocalDateTime in = LocalDateTime.of(2017, 1, 1, 1, 0);
     LocalDateTime out = LocalDateTime.of(2017, 1, 2, 1, 1);
-    timeCard.addTimePair(new TimePair(in, out, "dept", "paycode", 9.5, 1));
+    timeCard.addTimePair(in, out, "dept", "paycode", 9.5);
     in = LocalDateTime.of(2017, 1, 2, 2, 0);
     out = LocalDateTime.of(2017, 1, 2, 2, 1);
-    timeCard.addTimePair(new TimePair(in, out, "dept", "paycode", 5.0, 1));
+    timeCard.addTimePair(in, out, "dept", "paycode", 5.0);
     // total hours is calculated from TimePair#duration 
     assertEquals(timeCard.getTotalHoursWorked(), 14.5, 0);
   }
@@ -73,18 +66,18 @@ public class TimeCardTest {
       // with spread
     LocalDateTime in = LocalDateTime.of(2017, 1, 1, 10, 05);
     LocalDateTime out = LocalDateTime.of(2017, 1, 2, 1, 35);
-    timeCard.addTimePair(new TimePair(in, out, "dept", "paycode", 0.0, 1));
+    timeCard.addTimePair(in, out, "dept", "paycode", 0.0);
       // without spread
     in = LocalDateTime.of(2017, 1, 2, 9, 0);
     out = LocalDateTime.of(2017, 1, 2, 12, 0);
-    timeCard.addTimePair(new TimePair(in, out, "dept", "paycode", 0.0, 1));
+    timeCard.addTimePair(in, out, "dept", "paycode", 0.0);
       // with spread across 2 TimePairs
     in = LocalDateTime.of(2017, 1, 3, 9, 30);
     out = LocalDateTime.of(2017, 1, 3, 12, 10);
-    timeCard.addTimePair(new TimePair(in, out, "dept", "paycode", 0.0, 1));
+    timeCard.addTimePair(in, out, "dept", "paycode", 0.0);
     in = LocalDateTime.of(2017, 1, 3, 14, 10);
     out = LocalDateTime.of(2017, 1, 3, 23, 42);
-    timeCard.addTimePair(new TimePair(in, out, "dept", "paycode", 0.0, 1));
+    timeCard.addTimePair(in, out, "dept", "paycode", 0.0);
 
       // spread is any calendar day (6am to 5:59am) working more than 10 hrs
       // from start of first clock in to the end of last clock out.

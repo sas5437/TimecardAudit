@@ -5,6 +5,7 @@ import java.io.File;
 import timecard.CsvHandler;
 import timecard.TimeCard;
 import timecard.TimePair;
+import timecard.SummaryRow;
 
 public class CsvHandlerTest {
   @Test
@@ -16,16 +17,16 @@ public class CsvHandlerTest {
   }
 
   @Test
-  public void testProcessFile() {
+  public void testProcessSummaryRows() {
     CsvHandler csvHandler = new CsvHandler();
+    ArrayList<SummaryRow> summaryRows;
     try {
       File file = new File("src/test/resources/ExampleTimecardReport.csv");
       csvHandler.setInputFile(file);
-      csvHandler.processFile();
+      summaryRows = csvHandler.processSummaryRows();
+      assertEquals(summaryRows.size(), 60);
     } catch(Exception ex) {
       ex.printStackTrace();
     }
-    // Expect 60 TimeCards from this file, 60 workers clocked time
-    assertEquals(csvHandler.getTimeCards().size(), 60);
   }
 }

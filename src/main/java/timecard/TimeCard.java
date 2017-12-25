@@ -49,6 +49,12 @@ public class TimeCard {
     timePairs = new ArrayList<TimePair>();
   }
 
+  public void setRoundMinutes(Integer minutes) {
+    roundMinutesTo = minutes;
+    for(TimePair timePair : timePairs)
+      timePair.setRoundTo(minutes);
+  }
+
   public void setCompanyCode(String companyCode) {
     this.companyCode = companyCode;
   }
@@ -81,11 +87,8 @@ public class TimeCard {
     return lastName;
   }
 
-  public String getFullName() {
-    return lastName + ", " + firstName;
-  }
-
-  public void addTimePair(TimePair timePair) {
+  public void addTimePair(LocalDateTime clockIn, LocalDateTime clockOut, String department, String payCode, Double hours) {
+    TimePair timePair = new TimePair(clockIn, clockOut, department, payCode, hours, roundMinutesTo);
     this.timePairs.add(timePair);
   }
 

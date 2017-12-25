@@ -1,6 +1,7 @@
 package timecard;
 
 import java.io.File;
+import java.util.ArrayList;
 import timecard.View;
 import timecard.CsvHandler;
 import timecard.FileNameExtensionError;
@@ -25,6 +26,10 @@ public class Controller {
     csvHandler.setInputFile(file);
   }
 
+  public Integer getRoundingOption() {
+    return csvHandler.getRoundingOption();
+  }
+
   public void setOutputFilePath(String filePath) {
     try {
       csvHandler.setOutputFilePath(filePath);
@@ -41,22 +46,15 @@ public class Controller {
     return csvHandler.isReady();
   }
 
-  // TODO: argument should be a hash of configuration key value pairs
-  public void processFile() {
-    if(csvHandler.isReady()) {
-      try {
-        csvHandler.processFile();
-        view.setStatusText(csvHandler.getTimeCards().size() + " time cards read from file. Writing summary file...");
-        csvHandler.writeSummaryFile();
-      } catch(FileNameExtensionError ex) {
-        view.setStatusText(ex.getMessage());
-        view.showAlert(ex.getMessage());
-        ex.printStackTrace();
-      } catch(Exception ex) {
-        view.setStatusText(ex.getMessage());
-        view.showAlert(ex.getMessage());
-        ex.printStackTrace();
-      }
-    }
+  public ArrayList<TimePairRow> getTimePairRows() throws Exception {
+    return csvHandler.processTimePairRows();
+  }
+
+  public ArrayList<SummaryRow> getSummaryRows() throws Exception {
+    return csvHandler.processSummaryRows();
+  }
+
+  public void exportSummaryFile() throws Exception {
+    csvHandler.exportSummaryFile();
   }
 }

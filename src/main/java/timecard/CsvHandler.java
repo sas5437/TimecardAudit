@@ -2,6 +2,8 @@ package timecard;
 
 import java.io.*;
 import java.util.Arrays;
+import java.util.List;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Collection;
 import java.util.Map.Entry;
@@ -12,6 +14,7 @@ import java.time.format.DateTimeFormatter;
 import java.text.DecimalFormat;
 import timecard.FileNameExtensionError;
 import timecard.TimePair;
+import timecard.TimePairRow;
 import timecard.TimeCard;
 
 public class CsvHandler {
@@ -20,7 +23,7 @@ public class CsvHandler {
   String outputFilePath;
   Integer roundMinutesTo;
   Integer companyCodeHeaderIndex;
-  Integer positionIDHeaderIndex;
+  Integer positionIdHeaderIndex;
   Integer lastNameHeaderIndex;
   Integer firstNameHeaderIndex;
   Integer timeInHeaderIndex;
@@ -34,6 +37,8 @@ public class CsvHandler {
   HashMap<String, Double> employeeTotalShiftDifferential;
   HashMap<String, HashMap<String, HashMap<String, LocalDateTime>>> employeeSpreadOfHours;
   BufferedReader csvFile;
+  ArrayList<TimePairRow> timePairRows;
+  ArrayList<SummaryRow> summaryRows;
 
   public CsvHandler() {
     inputFile = null;
@@ -43,6 +48,8 @@ public class CsvHandler {
     employeeNames = new HashMap<String, String>();
     employeeTotalHours = new HashMap<String, Double>();
     employeeTotalShiftDifferential = new HashMap<String, Double>();
+    timePairRows = new ArrayList<TimePairRow>();
+    summaryRows = new ArrayList<SummaryRow>();
   }
 
   public void setInputFile(File file) {
@@ -68,6 +75,14 @@ public class CsvHandler {
 
   public void setRoundingOption(Integer roundMinutesTo) {
     this.roundMinutesTo = roundMinutesTo;
+    if(timeCards.size() < 1)
+      return;
+    for(TimeCard timeCard : timeCards.values())
+      timeCard.setRoundMinutes(roundMinutesTo);
+  }
+
+  public Integer getRoundingOption() {
+    return roundMinutesTo;
   }
 
   public boolean isReady() {
@@ -77,7 +92,34 @@ public class CsvHandler {
     return false;
   }
 
-  public void processFile() throws Exception {
+  public ArrayList<TimePairRow> processTimePairRows() throws Exception {
+    if(!isReady())
+      throw new Exception("Not ready to get table data.");
+    csvFile = new BufferedReader(new FileReader(inputFile));
+    processHeaders(csvFile.readLine());
+    String thisLine = "";
+    String[] data;
+
+    while ((thisLine = csvFile.readLine()) != null) {
+      data = thisLine.split(",", -1);
+      timePairRows.add(
+        new TimePairRow(
+          data[companyCodeHeaderIndex],
+          data[positionIdHeaderIndex],
+          data[lastNameHeaderIndex],
+          data[firstNameHeaderIndex],
+          data[timeInHeaderIndex],
+          data[timeOutHeaderIndex],
+          data[hoursHeaderIndex],
+          data[payCodeHeaderIndex],
+          data[departmentHeaderIndex]));
+    }
+
+    csvFile.close();
+    return timePairRows;
+  }
+
+  public ArrayList<SummaryRow> processSummaryRows() throws Exception {
     if(!isReady())
       throw new Exception("Not ready to process input file.");
     csvFile = new BufferedReader(new FileReader(inputFile));
@@ -86,26 +128,21 @@ public class CsvHandler {
     // Process CSV data
     processData();
     csvFile.close();
+    return summaryRows;
   }
 
   public Collection<TimeCard> getTimeCards() {
     return timeCards.values();
   }
 
-  public void writeSummaryFile() throws Exception {
+  public void exportSummaryFile() throws Exception {
     if(timeCards.isEmpty())
       return;
+    // TODO allow user to specify export file
     FileWriter summaryFile = new FileWriter("SummaryResults.csv");
-    summaryFile.write("Position ID, Employee Name, Hours Worked, 40+ Hours?, Shift Differential, Spread of Hours\n");
-    for(Map.Entry<String, TimeCard> entry : timeCards.entrySet()) {
-      summaryFile.write(
-        entry.getKey() + "," +
-        entry.getValue().getFullName() + "," +
-        entry.getValue().getFormattedTotalHoursWorked() + "," +
-        (entry.getValue().hasOvertime() ? "X" : "") + "," +
-        entry.getValue().getFormattedTotalShiftDifferential() + "," +
-        entry.getValue().getDaysWithSpread() + "\n"
-      );
+    summaryFile.write("Position ID, Employee Last Name, Employee First Name, Hours Worked, 40+ Hours?, Shift Differential, Spread of Hours\n");
+    for(SummaryRow summaryRow : summaryRows) {
+      summaryFile.write(summaryRow.toCsvString());
     }
     summaryFile.close();
   }
@@ -114,7 +151,7 @@ public class CsvHandler {
     // Process header to find columns we need
     String[] headerArray = headerRow.split(",");
     companyCodeHeaderIndex = getHeaderIndex(headerArray, "(?i)company\\scode");
-    positionIDHeaderIndex = getHeaderIndex(headerArray, "(?i)position\\sid");
+    positionIdHeaderIndex = getHeaderIndex(headerArray, "(?i)position\\sid");
     lastNameHeaderIndex = getHeaderIndex(headerArray, "(?i)last\\sname");
     firstNameHeaderIndex = getHeaderIndex(headerArray, "(?i)first\\sname");
     timeInHeaderIndex = getHeaderIndex(headerArray, "(?i)in\\stime");
@@ -126,22 +163,37 @@ public class CsvHandler {
 
   private void processData() throws Exception {
     String dataRow = csvFile.readLine();
-    String[] dataArray = dataRow.split(",");
+    String[] dataArray = dataRow.split(",", -1);
     int rowNumber = 1;
     TimeCard timeCard = null;
     TimePair timePair = null;
+    summaryRows = new ArrayList<SummaryRow>();
+    timeCards = new HashMap<String, TimeCard>();
 
+    // process the CSV file into TimePair and TimeCard models
     while (dataRow != null) {
       rowNumber += 1;
-      timeCard = findOrCreateTimeCard(dataRow.split(","));
-      timePair = createTimePair(dataRow.split(","), rowNumber);
-      timeCard.addTimePair(timePair);
+      dataArray = dataRow.split(",", -1);
+      timeCard = findOrCreateTimeCard(dataArray);
+      createTimePair(dataArray, rowNumber, timeCard);
       dataRow = csvFile.readLine();
+    }
+
+    // summarize the data model into an easy to consume report data set
+    for(Map.Entry<String, TimeCard> entry : timeCards.entrySet()) {
+      summaryRows.add(new SummaryRow(
+        entry.getKey(),
+        entry.getValue().getLastName(),
+        entry.getValue().getFirstName(),
+        entry.getValue().getFormattedTotalHoursWorked(),
+        entry.getValue().hasOvertime(),
+        entry.getValue().getFormattedTotalShiftDifferential(),
+        entry.getValue().getDaysWithSpread()));
     }
   }
 
   private TimeCard findOrCreateTimeCard(String[] dataArray) {
-    String positionId = dataArray[positionIDHeaderIndex];
+    String positionId = dataArray[positionIdHeaderIndex];
     if(timeCards.get(positionId) == null) {
       timeCards.put(
           positionId, 
@@ -156,7 +208,7 @@ public class CsvHandler {
     return timeCards.get(positionId);
   }
 
-  private TimePair createTimePair(String[] dataArray, int rowNumber) throws Exception {
+  private void createTimePair(String[] dataArray, int rowNumber, TimeCard timeCard) throws Exception {
     String key = "";
     String positionId = "";
     String dateKey = "";
@@ -165,15 +217,11 @@ public class CsvHandler {
     Double hours = 0.0;
     LocalDateTime in = null;
     LocalDateTime out = null;
-    LocalDateTime adjustedIn = null;
-    LocalDateTime adjustedOut = null;
     String dept = "";
 
-    try {
-      dept = dataArray[departmentHeaderIndex];
-    } catch (Exception e) {
-      dept = "";
-    }
+    dept = dataArray[departmentHeaderIndex];
+    payCode = dataArray[payCodeHeaderIndex];
+    positionId = dataArray[positionIdHeaderIndex];
     try {
       in = stringToDate(dataArray[timeInHeaderIndex]);
     } catch (Exception e) {
@@ -185,21 +233,11 @@ public class CsvHandler {
       throw new Exception("Clock Out could not be parsed on line " + rowNumber + " of the CSV.");
     }
     try {
-      payCode = dataArray[payCodeHeaderIndex];
-    } catch(Exception e) {
-      payCode = "";
-    }
-    try {
       hours = Double.valueOf(dataArray[hoursHeaderIndex]);
     } catch (Exception e) {
       hours = 0.0;
     }
-    try {
-      positionId = dataArray[positionIDHeaderIndex];
-    } catch(Exception e) {
-      throw new Exception("Could not parse Position Id on line " + rowNumber + ".");
-    }
-    return new TimePair(in, out, dept, payCode, hours, roundMinutesTo);
+    timeCard.addTimePair(in, out, dept, payCode, hours);
   }
 
   private LocalDateTime stringToDate(String string) {

@@ -33,9 +33,12 @@ public class TimePairTest {
 
   @Test
   public void testPartialHoursAfterMidnight() {
-    clockOut = LocalDateTime.of(2017, 7, 22, 3, 30);
+    clockOut = LocalDateTime.of(2017, 7, 22, 3, 20);
     timePair = new TimePair(clockIn, clockOut, department, payCode, duration, roundTo);
-    assertEquals(timePair.getHoursAfterMidnight(), 3.5, 0.0);
+    assertEquals(timePair.getHoursAfterMidnight(), 3.33, 0.005);
+    roundTo = 15;
+    timePair = new TimePair(clockIn, clockOut, department, payCode, duration, roundTo);
+    assertEquals(timePair.getHoursAfterMidnight(), 3.25, 0.0);
   }
 
   @Test
