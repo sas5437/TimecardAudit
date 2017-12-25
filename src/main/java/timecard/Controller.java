@@ -15,8 +15,6 @@ public class Controller {
 
   public void setView(View aView) {
     view = aView;
-    view.setup(this);
-    view.setVisible(true);
   }
 
   public String getInputFilePath() {
@@ -24,11 +22,7 @@ public class Controller {
   }
 
   public void setInputFile(File file) {
-    try {
-      csvHandler.setInputFile(file);
-    } catch(FileNameExtensionError er) {
-      view.setStatusText(er.getMessage());
-    }
+    csvHandler.setInputFile(file);
   }
 
   public void setOutputFilePath(String filePath) {
@@ -44,11 +38,7 @@ public class Controller {
   }
 
   public boolean isReadyToProcess() {
-    if(csvHandler.isReady()) {
-      return true;
-    } else {
-      return false;
-    }
+    return csvHandler.isReady();
   }
 
   // TODO: argument should be a hash of configuration key value pairs

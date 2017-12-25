@@ -1,5 +1,8 @@
 package timecard;
 
+import javafx.application.Application;
+import javafx.stage.Stage;
+
 /* TimeCardAudit.java
 
 Author: Scott Serok
@@ -18,11 +21,16 @@ The only headers used for auditing are Pay Date, Time In, Time Out, Hours, and E
 
 */
 
-public class TimeCardAudit {
-	public static void main(String[] args) {
-    View view = new View();
+public class TimeCardAudit extends Application {
+
+  @Override
+  public void start(Stage primaryStage) {
     Controller controller = new Controller();
+    View view = new View(primaryStage, controller);
     controller.setView(view);
-    view.setVisible(true);
+  }
+
+	public static void main(String[] args) {
+    launch(args);
   }
 }

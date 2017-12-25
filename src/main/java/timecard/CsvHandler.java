@@ -45,10 +45,7 @@ public class CsvHandler {
     employeeTotalShiftDifferential = new HashMap<String, Double>();
   }
 
-  public void setInputFile(File file) throws FileNameExtensionError {
-    if(!file.getName().matches(".*\\.csv$")){
-      throw new FileNameExtensionError(".csv");
-    }
+  public void setInputFile(File file) {
     this.inputFile = file;
   }
 
@@ -74,7 +71,7 @@ public class CsvHandler {
   }
 
   public boolean isReady() {
-    if(inputFile != null && inputFile.getName().matches("(?i).*\\.csv$")) {
+    if(inputFile != null) {
       return true;
     }
     return false;

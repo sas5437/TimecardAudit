@@ -1,107 +1,95 @@
 package timecard;
 
-import java.awt.Desktop;
-import java.awt.*;
-import java.awt.event.*;
 import java.io.*;
-import javax.swing.*;
-import javax.swing.filechooser.FileNameExtensionFilter;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.ComboBox;
+import javafx.scene.layout.GridPane;
+import javafx.stage.Stage;
+import javafx.stage.FileChooser;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
+import javafx.geometry.Insets;
+
 import timecard.Controller;
 
-public class View extends JFrame {
+public class View {
   final String FIFTEEN_MINUTES = "15 minutes";
   final String ONE_MINUTE = "1 minute";
   final String WINDOW_TITLE = "ADP Time Card Auditor v1";
 
   Controller controller;
-  File file;
+  File inputFile;
 
-  JFileChooser chooser;
-  FileNameExtensionFilter filter;
-  JButton runButton;
-  JLabel statusbar;
+  FileChooser fileChooser;
+  Button runButton;
+  Button selectInputFileButton;
+  ComboBox<String> roundMinutesComboBox;
+  Label statusLabel;
+  Stage stage;
 
-  public View() {
-    super();
-  }
-
-  public void setup(Controller controller) {
+  public View(Stage stage, Controller controller) {
+    this.stage = stage;
     this.controller = controller;
-    file = null;
-    String[] minuteRoundListOptions = { ONE_MINUTE, FIFTEEN_MINUTES };
-    
-    setTitle(WINDOW_TITLE);
-    setSize(500, 275);
-    setDefaultCloseOperation(EXIT_ON_CLOSE);
-    
-    Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-    this.setLocation(dim.width/2-this.getSize().width/2, dim.height/2-this.getSize().height/2);
+    inputFile = null;
+  
+    runButton = new Button();
+    selectInputFileButton = new Button();
+    roundMinutesComboBox = new ComboBox<String>();
+    statusLabel = new Label("Select an input file");
 
-    runButton = new JButton("Run");
-    JButton fileButton = new JButton("Select File");
+    roundMinutesComboBox.getItems().addAll(ONE_MINUTE, FIFTEEN_MINUTES);
+    roundMinutesComboBox.setValue(ONE_MINUTE);
 
-    JComboBox minuteRoundList = new JComboBox(minuteRoundListOptions); 
-    JLabel minuteListLabel = new JLabel("Round calculations to the nearest");
-    statusbar = new JLabel();
-    statusbar.setForeground(Color.BLUE);
+    runButton.setText("Run");
+    selectInputFileButton.setText("Select Input File");
+    inputFile = null;
 
-    minuteRoundList.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent ae) {
-        String selectedItem = (String)minuteRoundList.getSelectedItem();
+    roundMinutesComboBox.setOnAction(new EventHandler<ActionEvent>() {
+      @Override
+      public void handle(ActionEvent event) {
+        String selectedItem = (String)roundMinutesComboBox.getValue();
         if(selectedItem.equals(ONE_MINUTE)) {
           controller.setRoundingOption(1);
-
         } else if (selectedItem.equals(FIFTEEN_MINUTES)) {
           controller.setRoundingOption(15);
-
         }
       }
     });
-
-
-    // Create a file chooser that allows you to pick a CSV file
-    fileButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent ae) {
-        chooser = new JFileChooser();
-        filter = new FileNameExtensionFilter("Comma Separated Value", "CSV", "csv");
-        chooser.setFileFilter(filter);
-        int option = chooser.showOpenDialog(View.this);
-        if (option == JFileChooser.APPROVE_OPTION) {
-          File file = chooser.getSelectedFile();
-          controller.setInputFile(file);
-          String filename = (file == null ? "nothing" : file.getName());
-          statusbar.setText(filename + " selected.");
-        }
-        else {
-          statusbar.setText("Canceled.");
-        }
+    selectInputFileButton.setOnAction(new EventHandler<ActionEvent>() {
+      @Override
+      public void handle(ActionEvent event) {
+        fileChooser = new FileChooser();
+        fileChooser.getExtensionFilters().addAll(
+            new FileChooser.ExtensionFilter("Comma Separated Value", "*.CSV", "*.csv"));
+        inputFile = fileChooser.showOpenDialog(stage);
+        controller.setInputFile(inputFile);
+        setStatusText("File selected: " + inputFile.getName());
         toggleRunButton();
       }
     });
-
-    // Create a file chooser that allows you to pick a CSV file
-    runButton.addActionListener(new ActionListener() {
-      public void actionPerformed(ActionEvent ae) {
+    runButton.setOnAction(new EventHandler<ActionEvent>() {
+      @Override
+      public void handle(ActionEvent event) {
         if(!controller.isReadyToProcess()){
-          JOptionPane.showMessageDialog(View.this, "Please select a file first.");
-
+          new Alert(AlertType.CONFIRMATION, "Please select an input file first.");
         } else {
           try {
             String fileName = controller.getInputFilePath();
-            statusbar.setText("... processing " + fileName);
+            statusLabel.setText("... processing " + fileName);
             controller.processFile();
-
           } catch (Exception e) {
-            statusbar.setText("There was a problem processing the file.");
+            statusLabel.setText("There was a problem processing the file.");
             try {
               FileWriter errorFile = new FileWriter("ErrorLog.txt");
               errorFile.write(" \n\nMessage: " + e.getMessage() + "\n\nStack Trace: " + e.getStackTrace()[0].toString());
               errorFile.close();
               java.awt.Desktop.getDesktop().edit(new File("ErrorLog.txt"));
-
             } catch (IOException ex) {
-              statusbar.setText("Problem processing the file and logging the exception.");
-
+              statusLabel.setText("Problem processing the file and logging the exception.");
             }
             toggleRunButton();
           }
@@ -109,50 +97,37 @@ public class View extends JFrame {
       }
     });
 
-    minuteRoundList.setSelectedIndex(0);
-
-    JPanel topPanel = new JPanel();
-    JPanel centerPanel = new JPanel();
-    JPanel bottomPanel = new JPanel();
-    JPanel statusPanel = new JPanel();
-
-    topPanel.add(fileButton);
-    centerPanel.add(minuteListLabel);
-    centerPanel.add(minuteRoundList);
-    bottomPanel.add(runButton);
-    statusPanel.add(statusbar);
-
-    Container c = getContentPane();
-    c.setLayout(new BoxLayout(c, BoxLayout.Y_AXIS));
-    c.add(topPanel, BorderLayout.NORTH);
-    c.add(centerPanel, BorderLayout.CENTER);
-    c.add(bottomPanel, BorderLayout.SOUTH);
-    c.add(statusPanel, BorderLayout.SOUTH);
-    toggleRunButton();
-    resetStatusBar();
-  }
-
-  public void resetStatusBar() {
+    GridPane root = new GridPane();
+    root.setVgap(4);
+    root.setHgap(10);
+    root.setPadding(new Insets(5, 5, 5, 5));
+    root.add(selectInputFileButton, 0, 0);
+    root.add(roundMinutesComboBox, 1, 0);
+    root.add(runButton, 0, 1);
+    root.add(statusLabel, 0, 2);
+    Scene scene = new Scene(root, 500, 275);
+    stage.setTitle("ADP Time Card Audit");
+    stage.setScene(scene);
     setStatusText("No file selected.");
+    stage.show();
+    toggleRunButton();
   }
 
   public void setStatusText(String message) {
-    statusbar.setText(message);
+    statusLabel.setText(message);
   }
 
   public void sendPopupWindow(String message) {
-    JTextArea textArea = new JTextArea(6, 25);
-    textArea.setText(message);
-    textArea.setEditable(false);
-    JScrollPane scrollPane = new JScrollPane(textArea);
-    JOptionPane.showMessageDialog(View.this, scrollPane);
+    new Alert(AlertType.CONFIRMATION, message).show();
   }
 
   private void toggleRunButton(){
     if(controller.isReadyToProcess()){
-      runButton.setEnabled(true);
+      new Alert(AlertType.CONFIRMATION, "READY!").show();
+      runButton.setDisable(false);
     } else {
-      runButton.setEnabled(false);
+      new Alert(AlertType.CONFIRMATION, "NOT READY").show();
+      runButton.setDisable(true);
     }
   }
 }
