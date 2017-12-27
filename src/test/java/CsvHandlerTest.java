@@ -19,7 +19,7 @@ public class CsvHandlerTest {
   public void testProcessFile() {
     CsvHandler csvHandler = new CsvHandler();
     try {
-      File file = new File("src/test/resources/IchiranTimecardReport-new.csv");
+      File file = new File("src/test/resources/ExampleTimecardReport.csv");
       csvHandler.setInputFile(file);
       csvHandler.processFile();
     } catch(Exception ex) {
