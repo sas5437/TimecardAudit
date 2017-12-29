@@ -40,8 +40,9 @@ public class View {
   final Integer TABLE_WIDTH = 850;
   final Integer MENU_HEIGHT = 30;
   final Integer STATUS_LABEL_HEIGHT = 25;
+  final Integer TAB_HEIGHT = 60;
   final Integer STATUS_LABEL_WIDTH = TABLE_WIDTH-75;
-  final Integer WINDOW_HEIGHT = TABLE_HEIGHT + STATUS_LABEL_HEIGHT + MENU_HEIGHT;
+  final Integer WINDOW_HEIGHT = TABLE_HEIGHT + STATUS_LABEL_HEIGHT + MENU_HEIGHT + TAB_HEIGHT;
   final Integer WINDOW_WIDTH = TABLE_WIDTH;
   final String IMPORT_TAB_TEXT = "Raw Input File";
   final String EXPORT_TAB_TEXT = "Calculated Summary";
@@ -62,11 +63,11 @@ public class View {
     inputFile = null;
 
     importTableView = new TableView<TimePairRow>();
-    importTableView.setMinHeight(TABLE_HEIGHT-20);
+    importTableView.setMinHeight(TABLE_HEIGHT);
     importTableView.setMinWidth(TABLE_WIDTH);
     
     exportTableView = new TableView<SummaryRow>();
-    exportTableView.setMinHeight(TABLE_HEIGHT-20);
+    exportTableView.setMinHeight(TABLE_HEIGHT);
     exportTableView.setMinWidth(TABLE_WIDTH);
 
     TabPane tabPane = new TabPane();
