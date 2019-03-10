@@ -1,4 +1,4 @@
 Application-Name: Timecard Audit
 Main-Class: TimecardAudit
 Permissions: all-permissions
-Codebase: https://www.github.com/sas5437
+Codebase: https://www.github.com/scottserok/TimecardAudit
